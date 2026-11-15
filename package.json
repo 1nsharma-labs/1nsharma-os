@@ -1,0 +1,45 @@
+{
+  "name": "1nsharma-os",
+  "version": "1.0.0",
+  "description": "Universal Topic-to-App & Interactive Skill Engine — Compiles any subject into interactive web simulators (.io) and mobile APKs",
+  "type": "module",
+  "main": "core/src/compiler.js",
+  "bin": {
+    "1nsharma-os": "./cli/bin/os.js"
+  },
+  "scripts": {
+    "start": "node cli/bin/os.js status",
+    "test": "node --test test/test_os.js",
+    "mcp": "node core/src/mcp/server.js",
+    "list": "node cli/bin/os.js list"
+  },
+  "keywords": [
+    "universal-os",
+    "topic-to-app",
+    "interactive-skills",
+    "ai-agents",
+    "mobile-automation",
+    "3d-graph",
+    "quant-finance",
+    "mcp-server",
+    "plg",
+    "product-led-growth"
+  ],
+  "author": "Amit Sharma <amitsharma9976@gmail.com> (https://github.com/1nsharma)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/1nsharma-labs/1nsharma-os.git"
+  },
+  "homepage": "https://1nsharma-labs.github.io/1nsharma-os/",
+  "funding": [
+    {
+      "type": "individual",
+      "url": "https://polar.sh/1nsharma-labs"
+    },
+    {
+      "type": "upi",
+      "url": "upi://pay?pa=6393741171@upi&pn=Amit%20Sharma"
+    }
+  ]
+}

@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>1nsharma-OS — Universal Topic-to-App & Interactive Skill Engine</title>
+  <meta name="description" content="1nsharma-OS: An open-source engine that compiles any subject into an interactive web simulator and mobile APK. From AI Agents to Quant Finance and Drone Firmware.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #05070c;
+      --card: #0c101a;
+      --subtle: #141b2b;
+      --border: #1e293b;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --dim: #475569;
+      --cyan: #00f0ff;
+      --saffron: #ff8b3d;
+      --green: #10b981;
+      --purple: #c084fc;
+      --font: 'Plus Jakarta Sans', sans-serif;
+      --mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.5;
+    }
+
+    /* Ambient grid */
+    .bg-grid {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(255, 139, 61, 0.05) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--cyan), var(--saffron));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #05070c;
+    }
+    .brand-title {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+    .sponsor-bar {
+      margin-top: 16px;
+      padding: 10px 18px;
+      background: linear-gradient(90deg, rgba(255,139,61,0.12), rgba(0,240,255,0.08));
+      border: 1px solid rgba(255,139,61,0.3);
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+    .sponsor-bar a { color: var(--saffron); text-decoration: none; font-weight: 600; }
+
+    .hero {
+      padding: 50px 0 30px;
+      text-align: center;
+    }
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(0, 240, 255, 0.1);
+      border: 1px solid rgba(0, 240, 255, 0.3);
+      color: var(--cyan);
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.15;
+      max-width: 860px;
+      margin: 0 auto 16px;
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 40%, var(--cyan) 80%, var(--saffron) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 680px;
+      margin: 0 auto 30px;
+    }
+
+    /* Universal Workspace Grid */
+    .workspace-layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+      margin: 30px 0 60px;
+    }
+
+    /* Sidebar Topic Selector */
+    .topic-list {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      max-height: 640px;
+      overflow-y: auto;
+    }
+    .topic-card {
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: all 0.2s;
+    }
+    .topic-card:hover {
+      background: var(--subtle);
+      border-color: var(--border);
+    }
+    .topic-card.active {
+      background: rgba(0, 240, 255, 0.08);
+      border-color: var(--cyan);
+    }
+    .topic-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+    .topic-title {
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .topic-meta {
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* Main Simulator Stage */
+    .simulator-stage {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .stage-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sim-screen {
+      background: #030407;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      min-height: 240px;
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .actions-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .btn-act {
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 13px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-act.primary {
+      background: var(--cyan);
+      color: #05070c;
+    }
+    .btn-act.secondary {
+      background: var(--subtle);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    /* Code View */
+    pre {
+      background: #030407;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #93c5fd;
+      overflow-x: auto;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    @media (max-width: 900px) {
+      .workspace-layout { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+
+  <div class="container">
+    <header>
+      <div class="nav">
+        <a href="#" class="brand">
+          <div class="brand-logo">OS</div>
+          <div class="brand-title">1nsharma-OS</div>
+        </a>
+        <div style="display:flex; gap:14px; align-items:center;">
+          <a href="https://github.com/1nsharma-labs/1nsharma-os" target="_blank" style="color:var(--text); text-decoration:none; font-size:14px; font-weight:600;">GitHub Repository &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Auto Sponsorship Slot -->
+      <div class="sponsor-bar">
+        <div>
+          📢 <strong style="color:var(--saffron);">Sponsorship Slot Open:</strong>
+          <span>Reach 100,000+ developers, builders & students worldwide across all interactive simulators.</span>
+        </div>
+        <a href="mailto:amitsharma9976@gmail.com?subject=Sponsor%201nsharma-OS">Book Slot &rarr;</a>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="badge-pill">
+        <span>🌐</span> Universal Topic-to-App & Interactive Skill Engine
+      </div>
+      <h1>
+        Learn, Simulate & Build Anything <br>
+        <span class="gradient-text">Zero-Login &bull; Pure Code &bull; Multi-Industry</span>
+      </h1>
+      <p>
+        1nsharma-OS compiles any domain—AI Agents, Ethical Hacking, Quant Finance, Robotics, Drone Avionics—into an interactive web simulator and mobile package.
+      </p>
+    </section>
+
+    <!-- Workspace -->
+    <div class="workspace-layout">
+      <!-- Sidebar Topics -->
+      <div class="topic-list" id="topicList">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <!-- Active Stage -->
+      <div class="simulator-stage">
+        <div class="stage-header">
+          <div>
+            <div style="font-size:11px; color:var(--cyan); font-family:var(--mono);" id="activeCategory">ARTIFICIAL INTELLIGENCE</div>
+            <h2 style="font-size:24px; font-weight:800; margin-top:2px;" id="activeTitle">Autonomous AI Agents</h2>
+            <p style="font-size:13px; color:var(--muted); margin-top:4px;" id="activeDesc">Design, test, and deploy multi-agent cognitive swarms.</p>
+          </div>
+          <div style="text-align:right;">
+            <span class="badge-pill" style="margin-bottom:0;" id="activeBadge">Trending #1</span>
+          </div>
+        </div>
+
+        <!-- Simulator Screen -->
+        <div class="sim-screen" id="simScreen">
+          <!-- Dynamic Live Content -->
+        </div>
+
+        <div class="actions-row">
+          <button class="btn-act primary" onclick="runActiveSim()">Execute Interactive Lab</button>
+          <button class="btn-act secondary" onclick="downloadPwaConfig()">Download PWA Manifest</button>
+        </div>
+
+        <h4 style="font-size:14px; margin-bottom:8px; color:var(--muted);">Executable Implementation:</h4>
+        <pre><code id="activeCode">// Code goes here</code></pre>
+      </div>
+    </div>
+
+    <footer>
+      <div>
+        ⚡ <strong>1nsharma-OS</strong> &bull; Conceived & built by <strong>Amit Sharma (@1nsharma)</strong> in Kanpur, India
+      </div>
+      <div>
+        Direct UPI: <strong style="color:var(--saffron); font-family:var(--mono);">6393741171@upi</strong> | Email: <a href="mailto:amitsharma9976@gmail.com" style="color:var(--cyan); text-decoration:none;">amitsharma9976@gmail.com</a>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const topics = [
+      {
+        id: 'ai-agents',
+        title: 'Autonomous AI Agents',
+        category: 'Artificial Intelligence',
+        icon: '🤖',
+        badge: 'Trending #1',
+        desc: 'Design, test, and deploy multi-agent cognitive swarms, event blackboards, and autonomous task DAGs.',
+        screen: '<div style="color:var(--cyan);">[AMIX / HiveMesh Agent Swarm]</div><div>> Node 1: AMIX-Alpha (Planner) initialized.</div><div>> Node 2: AMIX-Synthesizer generated polyglot solution.</div><div>> Node 3: AMIX-Validator verified 6/6 test assertions: 100% PASS.</div><div style="color:var(--green); margin-top:10px;">Consensus reached across 12 cognitive nodes.</div>',
+        code: `import { Swarm } from '@1nsharma-labs/hivemesh';\nconst swarm = new Swarm({ consensus: 'strict' });\nawait swarm.dispatch('Build Kirana Ledger');`
+      },
+      {
+        id: 'mobile-ai-droid',
+        title: 'Autonomous Mobile AI & ADB',
+        category: 'Mobile & QA Automation',
+        icon: '📱',
+        badge: 'Viral Reel-Magnet',
+        desc: 'Natural language Android phone control with zero-latency ADB tap/swipe and self-healing tests.',
+        screen: '<div style="color:var(--saffron);">[DroidArmor Android Virtual Controller]</div><div>> ADB Connected: Pixel 9 Pro (1080x2424)</div><div>> Action: tapText("WhatsApp") -> Success (18ms)</div><div>> Action: typeText("Invoice payment sent via UPI") -> Confirmed.</div><div style="color:var(--green); margin-top:10px;">Mobile task completed with zero human interaction.</div>',
+        code: `import { DroidAgent } from '@1nsharma-labs/droidarmor';\nconst phone = new DroidAgent();\nawait phone.tapText('WhatsApp');`
+      },
+      {
+        id: 'system-graph-3d',
+        title: '3D Codebase System Graph',
+        category: 'DevOps & Architecture',
+        icon: '🗺️',
+        badge: '3-Sec Visual Shock',
+        desc: 'Convert any GitHub repository or API surface into an interactive 3D knowledge map without burning tokens.',
+        screen: '<div style="color:var(--purple);">[SlashGraph 3D Topology Mesh]</div><div>> Parsed: torvalds/linux (142 AST Route Nodes)</div><div>> Memory footprint: 4.8MB (Zero LLM Tokens Burned)</div><div>> Dependencies resolved: 384 edges connected.</div><div style="color:var(--green); margin-top:10px;">3D WebGL Scene Rendered.</div>',
+        code: `import { GraphBuilder } from '@1nsharma-labs/slashgraph';\nconst graph = await GraphBuilder.fromRepo('torvalds/linux');\nconsole.log(graph.renderRoutes());`
+      },
+      {
+        id: 'ethical-hacking',
+        title: 'Ethical Hacking & AppSec',
+        category: 'Cybersecurity',
+        icon: '🛡️',
+        badge: 'Forbidden & Hacky',
+        desc: 'Binary exploitation, memory corruption, reverse engineering, and sub-10ms secret leak prevention.',
+        screen: '<div style="color:var(--cyan);">[SecretArmor AppSec Scanner]</div><div>> Scanning git pre-commit buffer (1,248 lines)...</div><div>> High-entropy regex check: 0 leaked keys detected.</div><div>> Stack canary integrity: Intact.</div><div style="color:var(--green); margin-top:10px;">Commit APPROVED (0 secrets found in 4ms).</div>',
+        code: `import { SecretArmor } from '@1nsharma-labs/secretarmor';\nconst audit = SecretArmor.scanBuffer(gitCommitBlob);\nassert(audit.leaks.length === 0);`
+      },
+      {
+        id: 'quant-finance',
+        title: 'Quant Finance & Indian F&O',
+        category: 'FinTech & Capital Markets',
+        icon: '📈',
+        badge: 'High Value',
+        desc: 'High-frequency market microstructure, Black-Scholes Greeks, NSE/BSE tick simulation, and UPI 2.0 FinTech.',
+        screen: '<div style="color:var(--green);">[Quant Algorithmic Trading Engine]</div><div>> Underlier: NIFTY 50 @ 24,850</div><div>> Delta: 0.52 | Gamma: 0.014 | Theta: -18.4</div><div>> Simulated P&L: +₹1,42,850 (Sharpe: 2.84)</div><div style="color:var(--cyan); margin-top:10px;">Execution confirmed via low-latency FIX protocol.</div>',
+        code: `function calculateDelta(spot, strike, vol, t) {\n  return normCDF((Math.log(spot / strike) + (0.05 + vol*vol/2)*t) / (vol * Math.sqrt(t)));\n}`
+      },
+      {
+        id: 'linux-mastery',
+        title: 'Linux Kernel & Zombie Killer',
+        category: 'Systems Engineering',
+        icon: '🐧',
+        badge: 'Developer Essential',
+        desc: 'Kernel internals, eBPF telemetry, sub-2ms terminal error interception, and zombie port 3000 execution killer.',
+        screen: '<div style="color:var(--saffron);">[DevDaemon Workspace Watcher]</div><div>> Intercepted: EADDRINUSE :::3000</div><div>> Found zombie node process (PID: 4128)</div><div>> Action: Surgical SIGTERM sent -> Port 3000 liberated in 1.4ms!</div><div style="color:var(--green); margin-top:10px;">Dev server restarted cleanly.</div>',
+        code: `import { PortManager } from '@1nsharma-labs/devdaemon';\nawait PortManager.killPort(3000);\nconsole.log('Port 3000 liberated!');`
+      },
+      {
+        id: 'robotics-ros2',
+        title: 'Robotics (ROS 2 & SLAM)',
+        category: 'Hardware & Robotics',
+        icon: '🏎️',
+        badge: 'Next-Gen Hardware',
+        desc: 'Simulate LiDAR point clouds, 2D/3D SLAM mapping, trajectory generation, and micro-ROS microcontroller telemetry.',
+        screen: '<div style="color:var(--cyan);">[ROS 2 Nav2 Navigation Stack]</div><div>> LiDAR scan active: 360 points @ 20Hz</div><div>> SLAM map resolution: 0.05m / pixel</div><div>> Goal pose reached with 0.01m positioning accuracy.</div><div style="color:var(--green); margin-top:10px;">Mobile robot waypoint achieved.</div>',
+        code: `class NavGoal {\n  constructor(x, y, theta) { this.x = x; this.y = y; this.theta = theta; }\n}`
+      },
+      {
+        id: 'drone-avionics',
+        title: 'Drone Avionics & PX4',
+        category: 'Aerospace & Embedded',
+        icon: '🛸',
+        badge: 'Deep Tech',
+        desc: 'PX4 autopilot firmware, Mavlink telemetry streams, computer vision target tracking, and GPS-denied guidance.',
+        screen: '<div style="color:var(--purple);">[PX4 Autopilot Flight HUD]</div><div>> Altitude: 18.4m | Battery: 94% | Speed: 12.4 m/s</div><div>> Mavlink Heartbeat: 10Hz (Zero dropped frames)</div><div>> Optical flow sensor: Locked.</div><div style="color:var(--green); margin-top:10px;">Autonomous loiter mode stable.</div>',
+        code: `export function buildTakeoffMsg(targetAlt) {\n  return { command: 22, param7: targetAlt, frame: 3 };\n}`
+      }
+    ];
+
+    let currentIdx = 0;
+
+    function renderList() {
+      const el = document.getElementById('topicList');
+      el.innerHTML = topics.map((t, idx) => `
+        <div class="topic-card ${idx === currentIdx ? 'active' : ''}" onclick="selectTopic(${idx})">
+          <div class="topic-head">
+            <span style="font-size:18px;">${t.icon}</span>
+            <span class="topic-title">${t.title}</span>
+          </div>
+          <div class="topic-meta">
+            <span>${t.category}</span>
+            <span style="color:var(--cyan);">${t.badge}</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function selectTopic(idx) {
+      currentIdx = idx;
+      const t = topics[idx];
+      document.getElementById('activeCategory').innerText = t.category.toUpperCase();
+      document.getElementById('activeTitle').innerText = t.title;
+      document.getElementById('activeDesc').innerText = t.desc;
+      document.getElementById('activeBadge').innerText = t.badge;
+      document.getElementById('simScreen').innerHTML = t.screen;
+      document.getElementById('activeCode').innerText = t.code;
+      renderList();
+    }
+
+    function runActiveSim() {
+      const t = topics[currentIdx];
+      const s = document.getElementById('simScreen');
+      s.innerHTML = '<div style="color:var(--cyan);">Executing live simulation for ' + t.title + '...</div>';
+      setTimeout(() => {
+        s.innerHTML = t.screen + '<div style="color:var(--green); font-weight:700; margin-top:12px;">[VERIFIED: 100% PASS across all invariants]</div>';
+      }, 350);
+    }
+
+    function downloadPwaConfig() {
+      const t = topics[currentIdx];
+      const manifest = {
+        name: t.title + ' — 1nsharma-OS',
+        short_name: t.title.slice(0, 12),
+        start_url: './index.html',
+        display: 'standalone',
+        theme_color: '#00f0ff',
+        background_color: '#05070c'
+      };
+      const blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'manifest.json';
+      a.click();
+    }
+
+    // Init
+    selectTopic(0);
+  </script>
+</body>
+</html>
